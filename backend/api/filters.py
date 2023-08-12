@@ -8,10 +8,8 @@ User = get_user_model()
 class IngredientFilter(filters.FilterSet):
     """Фильтр для поиска по списку ингредиентов
     (поиск ведется по вхождению в начало названия)."""
-    name = filters.CharFilter(
-        field_name='name',
-        lookup_expr='istartswith'
-    )
+
+    name = filters.CharFilter(field_name='name', lookup_expr='istartswith')
 
     class Meta:
         model = Ingredient
@@ -20,22 +18,22 @@ class IngredientFilter(filters.FilterSet):
 
 class RecipeFilter(filters.FilterSet):
     """Фильтр для рецептов."""
+
     tags = filters.ModelMultipleChoiceFilter(
         field_name='tags__slug',
         to_field_name='slug',
         queryset=Tag.objects.all(),
     )
 
-    is_favorited = filters.BooleanFilter(
-        method='filter_favorited'
-    )
-    is_in_shopping_cart = filters.BooleanFilter(
-        method='filter_shopping_cart'
-    )
+    is_favorited = filters.BooleanFilter(method='filter_favorited')
+    is_in_shopping_cart = filters.BooleanFilter(method='filter_shopping_cart')
 
     class Meta:
         model = Recipe
-        fields = ('tags', 'author',)
+        fields = (
+            'tags',
+            'author',
+        )
 
     def filter_favorited(self, queryset, name, value):
         """Фильтруем рецепты по избранным."""

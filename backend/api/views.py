@@ -3,8 +3,14 @@ from collections import defaultdict
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredients,
-                            ShoppingCart, Tag)
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    Recipe,
+    RecipeIngredients,
+    ShoppingCart,
+    Tag,
+)
 from rest_framework import mixins, permissions, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -14,18 +20,27 @@ from users.models import Subscription, User
 
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
-from .serializers import (ChangePasswordSerializer, CustomUserCreateSerializer,
-                          CustomUserSerializer, IngredientSerializer,
-                          RecipeCreateSerializer, RecipeListSerializer,
-                          RecipeSerializer, SubscriptionSerializer,
-                          TagSerializer)
+from .serializers import (
+    ChangePasswordSerializer,
+    CustomUserCreateSerializer,
+    CustomUserSerializer,
+    IngredientSerializer,
+    RecipeCreateSerializer,
+    RecipeListSerializer,
+    RecipeSerializer,
+    SubscriptionSerializer,
+    TagSerializer,
+)
 
 
 class CustomUserViewSet(
-    mixins.CreateModelMixin, mixins.ListModelMixin,
-    mixins.RetrieveModelMixin, viewsets.GenericViewSet
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
 ):
     """Кастомный Viewset модели пользователя."""
+
     queryset = User.objects.all()
     permission_classes = [permissions.AllowAny]
 
@@ -49,24 +64,25 @@ class CustomUserViewSet(
             context={
                 'request': request,
                 'format': self.format_kwarg,
-                'view': self
-            }
+                'view': self,
+            },
         )
         return self.get_paginated_response(serializer.data)
 
     @action(
         methods=['post', 'delete'],
         detail=True,
-        permission_classes=[permissions.IsAuthenticated]
+        permission_classes=[permissions.IsAuthenticated],
     )
     def subscribe(self, request, pk):
         author = get_object_or_404(User, id=pk)
         subscription = Subscription.objects.filter(
-            user=request.user, author=author)
+            user=request.user, author=author
+        )
         if request.method == 'DELETE' and not subscription:
             return Response(
                 {'errors': 'Подписка уже удалена.'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         if request.method == 'DELETE':
             subscription.delete()
@@ -74,12 +90,12 @@ class CustomUserViewSet(
         if subscription:
             return Response(
                 {'errors': 'Вы уже подписаны на этого автора.'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         if author == request.user:
             return Response(
                 {'errors': 'Вы не можете подписаться на самого себя.'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         Subscription.objects.create(user=request.user, author=author)
         serializer = SubscriptionSerializer(
@@ -87,14 +103,15 @@ class CustomUserViewSet(
             context={
                 'request': request,
                 'format': self.format_kwarg,
-                'view': self
-            }
+                'view': self,
+            },
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class CurrentUserMeView(views.APIView):
     """View class просмотра текущего пользователя (себя)."""
+
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -103,20 +120,20 @@ class CurrentUserMeView(views.APIView):
             context={
                 'request': request,
                 'format': self.format_kwarg,
-                'view': self
-            }
+                'view': self,
+            },
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ChangePasswordView(views.APIView):
     """View class изменения пароля."""
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         serializer = ChangePasswordSerializer(
-            data=request.data,
-            context={'request': request}
+            data=request.data, context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
 
@@ -126,13 +143,13 @@ class ChangePasswordView(views.APIView):
         user.save()
 
         return Response(
-            {'message': 'Пароль успешно изменен.'},
-            status=status.HTTP_200_OK
+            {'message': 'Пароль успешно изменен.'}, status=status.HTTP_200_OK
         )
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """Viewset модели тега."""
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [IsAdminOrReadOnly]
@@ -141,6 +158,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     """Viewset модели ингредиента."""
+
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
@@ -151,8 +169,10 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Viewset модели рецепта."""
+
     queryset = Recipe.objects.prefetch_related(
-        'author', 'tags', 'ingredients').all()
+        'author', 'tags', 'ingredients'
+    ).all()
     permission_classes = [IsAuthorOrReadOnly]
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
@@ -181,19 +201,24 @@ class RecipeViewSet(viewsets.ModelViewSet):
         data, status = self.delete_recipe_user(request, pk, ShoppingCart)
         return Response(data, status=status)
 
-    @action(methods=['get'], detail=False,
-            permission_classes=[IsAuthenticated])
+    @action(
+        methods=['get'], detail=False, permission_classes=[IsAuthenticated]
+    )
     def download_shopping_cart(self, request):
         """Выгружаем список продуктов из корзины (формат txt)."""
-        ingredients = RecipeIngredients.objects.filter(
-            recipe__shopping_cart__user=request.user).values(
-                'ingredient__name',
-                'ingredient__measurement_unit',
-                'amount').order_by('ingredient__name')
+        ingredients = (
+            RecipeIngredients.objects.filter(
+                recipe__shopping_cart__user=request.user
+            )
+            .values(
+                'ingredient__name', 'ingredient__measurement_unit', 'amount'
+            )
+            .order_by('ingredient__name')
+        )
         shopping_list = self.create_ingredient_list(ingredients)
         response = HttpResponse(shopping_list, content_type='text/plain')
-        response['Content-Disposition'] = (
-            'attachment; filename={0}'.format('Список_покупок.txt')
+        response['Content-Disposition'] = 'attachment; filename={0}'.format(
+            'Список_покупок.txt'
         )
         return response
 
@@ -218,30 +243,24 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Доп.функция: создаем связку рецепт<->пользователь по id рецепта."""
         recipe = get_object_or_404(Recipe, id=pk)
         obj, created = model.objects.get_or_create(
-            recipe=recipe,
-            user=request.user
+            recipe=recipe, user=request.user
         )
         if not created:
             return (
                 {"message": f"Уже есть рецепт с id = {pk}."},
-                status.HTTP_400_BAD_REQUEST
+                status.HTTP_400_BAD_REQUEST,
             )
-        serializer = RecipeListSerializer(
-            recipe,
-            context={'request': request}
-        )
+        serializer = RecipeListSerializer(recipe, context={'request': request})
         return (serializer.data, status.HTTP_201_CREATED)
 
     def delete_recipe_user(self, request, pk, model):
         """Доп.функция: удаляем связку рецепт<->пользователь по id рецепта."""
         recipe = get_object_or_404(Recipe, id=pk)
         favorite_recipe = get_object_or_404(
-            model,
-            recipe=recipe,
-            user=request.user
+            model, recipe=recipe, user=request.user
         )
         favorite_recipe.delete()
         return (
             {"message": f"Рецепт с id = {pk} удален."},
-            status.HTTP_204_NO_CONTENT
+            status.HTTP_204_NO_CONTENT,
         )

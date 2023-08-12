@@ -10,29 +10,22 @@ class User(AbstractUser):
         max_length=254,
         unique=True,
         blank=False,
-        null=False
+        null=False,
     )
     username = models.CharField(
         verbose_name='Логин',
         max_length=150,
         unique=True,
         null=False,
-        blank=False
+        blank=False,
     )
     first_name = models.CharField(
-        verbose_name='Имя',
-        max_length=150,
-        blank=False
+        verbose_name='Имя', max_length=150, blank=False
     )
     last_name = models.CharField(
-        verbose_name='Фамилия',
-        max_length=150,
-        blank=False
+        verbose_name='Фамилия', max_length=150, blank=False
     )
-    password = models.CharField(
-        verbose_name='Пароль',
-        max_length=150
-    )
+    password = models.CharField(verbose_name='Пароль', max_length=150)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
@@ -50,14 +43,10 @@ class Subscription(models.Model):
     """Модель подписки пользователей."""
 
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='follower'
+        User, on_delete=models.CASCADE, related_name='follower'
     )
     author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='following'
+        User, on_delete=models.CASCADE, related_name='following'
     )
 
     class Meta:
@@ -67,13 +56,12 @@ class Subscription(models.Model):
 
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'author'],
-                name='Уникальность_подписчиков'
+                fields=['user', 'author'], name='Уникальность_подписчиков'
             ),
             models.CheckConstraint(
                 check=~models.Q(user=models.F('author')),
-                name='Ограничение_подписки_на_самого_себя'
-            )
+                name='Ограничение_подписки_на_самого_себя',
+            ),
         ]
 
     def __str__(self) -> str:

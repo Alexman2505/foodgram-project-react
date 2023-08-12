@@ -12,8 +12,7 @@ class Command(BaseCommand):
             reader = csv.reader(f)
             for row in reader:
                 status, created = Ingredient.objects.update_or_create(
-                    name=row[0],
-                    measurement_unit=row[1]
+                    name=row[0], measurement_unit=row[1]
                 )
 
     def handle(self, *args, **options):

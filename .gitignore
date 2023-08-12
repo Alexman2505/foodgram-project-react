@@ -134,3 +134,7 @@ dmypy.json
 # VSC
 /.vscode/
 .vscode/
+
+**/migrations/*.py
+/recipes/migrations/*.py
+/users/migrations/*.py
