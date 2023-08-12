@@ -8,7 +8,7 @@ SECRET_KEY = (
     'django-insecure-i_yfk@llvf2$a^tqlx#%&e5i+mxu=*a&e8%vh$%03-oy7-h-%w'
 )
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -120,7 +120,7 @@ USE_TZ = True
 
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 # STATIC_ROOT = BASE_DIR / 'collected_static' так было в уроке 10
 
 MEDIA_URL = '/media/'
