@@ -1,9 +1,9 @@
-from django.contrib import admin
+from django.contrib.admin import ModelAdmin, register
 from users.models import Subscription, User
 
 
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
+@register(User)
+class UserAdmin(ModelAdmin):
     """Управление пользователями в admin."""
 
     fields = ('username', 'email', 'first_name', 'last_name', 'password')
@@ -19,8 +19,8 @@ class UserAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(Subscription)
-class SubscriptionAdmin(admin.ModelAdmin):
+@register(Subscription)
+class SubscriptionAdmin(ModelAdmin):
     """Управление подписками в admin."""
 
     list_display = ('id', 'user', 'author')

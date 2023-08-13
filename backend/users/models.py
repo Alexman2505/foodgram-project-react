@@ -1,31 +1,37 @@
 from django.contrib.auth.models import AbstractUser
-from django.db import models
+from django.db.models import (
+    CASCADE,
+    CharField,
+    CheckConstraint,
+    EmailField,
+    ForeignKey,
+    F,
+    Model,
+    Q,
+    UniqueConstraint,
+)
 
 
 class User(AbstractUser):
     """Модель пользователя."""
 
-    email = models.EmailField(
+    email = EmailField(
         verbose_name='Адрес электронной почты',
         max_length=254,
         unique=True,
         blank=False,
         null=False,
     )
-    username = models.CharField(
+    username = CharField(
         verbose_name='Логин',
         max_length=150,
         unique=True,
         null=False,
         blank=False,
     )
-    first_name = models.CharField(
-        verbose_name='Имя', max_length=150, blank=False
-    )
-    last_name = models.CharField(
-        verbose_name='Фамилия', max_length=150, blank=False
-    )
-    password = models.CharField(verbose_name='Пароль', max_length=150)
+    first_name = CharField(verbose_name='Имя', max_length=150, blank=False)
+    last_name = CharField(verbose_name='Фамилия', max_length=150, blank=False)
+    password = CharField(verbose_name='Пароль', max_length=150)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
@@ -39,14 +45,17 @@ class User(AbstractUser):
         return self.username
 
 
-class Subscription(models.Model):
+class Subscription(Model):
     """Модель подписки пользователей."""
 
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='follower'
+    user = ForeignKey(
+        User,
+        on_delete=CASCADE,
+        related_name='follower',
+        verbose_name="Подписчик",
     )
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='following'
+    author = ForeignKey(
+        User, on_delete=CASCADE, related_name='following', verbose_name="Автор"
     )
 
     class Meta:
@@ -55,11 +64,11 @@ class Subscription(models.Model):
         verbose_name_plural = 'Подписки'
 
         constraints = [
-            models.UniqueConstraint(
+            UniqueConstraint(
                 fields=['user', 'author'], name='Уникальность_подписчиков'
             ),
-            models.CheckConstraint(
-                check=~models.Q(user=models.F('author')),
+            CheckConstraint(
+                check=~Q(user=F('author')),
                 name='Ограничение_подписки_на_самого_себя',
             ),
         ]

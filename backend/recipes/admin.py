@@ -56,7 +56,7 @@ class IngredientAdmin(ImportExportModelAdmin):
     resource_class = IngredientResource
 
 
-@admin.register(RecipeIngredients)
+# @admin.register(RecipeIngredients) #непойму нужна ли эта модель в админке
 class RecipeIngredientsAdmin(admin.ModelAdmin):
     """Управление ингредиентами в рецептах в admin."""
 
@@ -66,7 +66,7 @@ class RecipeIngredientsAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(Favorite)
+# @admin.register(Favorite) #непойму нужна ли эта модель в админке
 class FavoriteAdmin(admin.ModelAdmin):
     """Управление избранными рецептами в admin."""
 
@@ -76,7 +76,7 @@ class FavoriteAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(ShoppingCart)
+# @admin.register(ShoppingCart) #непойму нужна ли эта модель в админке
 class ShoppingCartAdmin(admin.ModelAdmin):
     """Управление корзиной покупок в admin."""
 

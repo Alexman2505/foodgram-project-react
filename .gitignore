@@ -138,3 +138,5 @@ dmypy.json
 **/migrations/*.py
 /recipes/migrations/*.py
 /users/migrations/*.py
+
+media/

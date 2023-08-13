@@ -12,12 +12,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ./.env
+      - ../.env
 
   backend:
     build: ../backend
     env_file:
-      - ./.env
+      - ../.env
     volumes:
       # - static:/staticfiles/
       # - static:/app/static/
@@ -32,7 +32,7 @@ services:
       context: ../frontend
       dockerfile: Dockerfile
     env_file:
-      - ./.env
+      - ../.env
     volumes:
       - ../frontend/:/app/result_build/
       # - static:/staticfiles/ #тут статика из теории
@@ -40,7 +40,7 @@ services:
   nginx:
     image: nginx:1.19.3
     env_file:
-      - ./.env
+      - ../.env
     ports:
       - "80:80"
     volumes:
