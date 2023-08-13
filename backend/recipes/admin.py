@@ -1,6 +1,7 @@
-from django.contrib import admin
-from import_export import resources
+from django.contrib.admin import register, ModelAdmin, TabularInline
 from import_export.admin import ImportExportModelAdmin
+from import_export.resources import ModelResource
+
 
 from .models import (
     Favorite,
@@ -12,14 +13,14 @@ from .models import (
 )
 
 
-class RecipeIngredientInline(admin.TabularInline):
+class RecipeIngredientInline(TabularInline):
     model = RecipeIngredients
     extra = 0
     min_num = 1
 
 
-@admin.register(Recipe)
-class RecipeAdmin(admin.ModelAdmin):
+@register(Recipe)
+class RecipeAdmin(ModelAdmin):
     """Управление рецептами в admin."""
 
     list_display = ('id', 'name', 'author', 'text', 'cooking_time', 'pub_date')
@@ -28,8 +29,8 @@ class RecipeAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
+@register(Tag)
+class TagAdmin(ModelAdmin):
     """Управление тегами в admin."""
 
     list_display = ('id', 'name', 'color', 'slug')
@@ -38,14 +39,14 @@ class TagAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-class IngredientResource(resources.ModelResource):
+class IngredientResource(ModelResource):
     """Необходим для импорта ингредиентов."""
 
     class Meta:
         model = Ingredient
 
 
-@admin.register(Ingredient)
+@register(Ingredient)
 class IngredientAdmin(ImportExportModelAdmin):
     """Управление ингредиентами в admin."""
 
@@ -56,8 +57,8 @@ class IngredientAdmin(ImportExportModelAdmin):
     resource_class = IngredientResource
 
 
-# @admin.register(RecipeIngredients) #непойму нужна ли эта модель в админке
-class RecipeIngredientsAdmin(admin.ModelAdmin):
+@register(RecipeIngredients)
+class RecipeIngredientsAdmin(ModelAdmin):
     """Управление ингредиентами в рецептах в admin."""
 
     list_display = ('id', 'recipe', 'ingredient', 'amount')
@@ -66,8 +67,8 @@ class RecipeIngredientsAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-# @admin.register(Favorite) #непойму нужна ли эта модель в админке
-class FavoriteAdmin(admin.ModelAdmin):
+@register(Favorite)
+class FavoriteAdmin(ModelAdmin):
     """Управление избранными рецептами в admin."""
 
     list_display = ('id', 'user', 'recipe')
@@ -76,8 +77,8 @@ class FavoriteAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-# @admin.register(ShoppingCart) #непойму нужна ли эта модель в админке
-class ShoppingCartAdmin(admin.ModelAdmin):
+@register(ShoppingCart)
+class ShoppingCartAdmin(ModelAdmin):
     """Управление корзиной покупок в admin."""
 
     list_display = ('id', 'user', 'recipe')
