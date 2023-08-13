@@ -21,7 +21,7 @@ class RecipeIngredientInline(TabularInline):
 
 @register(Recipe)
 class RecipeAdmin(ModelAdmin):
-    """Управление рецептами в admin."""
+    """Управление рецептами в админке."""
 
     list_display = ('id', 'name', 'author', 'text', 'cooking_time', 'pub_date')
     search_fields = ('name', 'author')
@@ -31,7 +31,7 @@ class RecipeAdmin(ModelAdmin):
 
 @register(Tag)
 class TagAdmin(ModelAdmin):
-    """Управление тегами в admin."""
+    """Управление тегами в админке."""
 
     list_display = ('id', 'name', 'color', 'slug')
     search_fields = ('name', 'color', 'slug')
@@ -40,7 +40,7 @@ class TagAdmin(ModelAdmin):
 
 
 class IngredientResource(ModelResource):
-    """Необходим для импорта ингредиентов."""
+    """Необходим для импорта ингредиентов для import_export"""
 
     class Meta:
         model = Ingredient
@@ -48,7 +48,7 @@ class IngredientResource(ModelResource):
 
 @register(Ingredient)
 class IngredientAdmin(ImportExportModelAdmin):
-    """Управление ингредиентами в admin."""
+    """Управление ингредиентами в админке."""
 
     list_display = ('id', 'name', 'measurement_unit')
     search_fields = ('name', 'measurement_unit')
@@ -59,7 +59,7 @@ class IngredientAdmin(ImportExportModelAdmin):
 
 @register(RecipeIngredients)
 class RecipeIngredientsAdmin(ModelAdmin):
-    """Управление ингредиентами в рецептах в admin."""
+    """Управление ингредиентами в рецептах в админке."""
 
     list_display = ('id', 'recipe', 'ingredient', 'amount')
     search_fields = ('recipe', 'ingredient')
@@ -69,7 +69,7 @@ class RecipeIngredientsAdmin(ModelAdmin):
 
 @register(Favorite)
 class FavoriteAdmin(ModelAdmin):
-    """Управление избранными рецептами в admin."""
+    """Управление избранными рецептами в админке."""
 
     list_display = ('id', 'user', 'recipe')
     search_fields = ('user', 'recipe')
@@ -79,7 +79,7 @@ class FavoriteAdmin(ModelAdmin):
 
 @register(ShoppingCart)
 class ShoppingCartAdmin(ModelAdmin):
-    """Управление корзиной покупок в admin."""
+    """Управление корзиной покупок в админке."""
 
     list_display = ('id', 'user', 'recipe')
     search_fields = ('user', 'recipe')

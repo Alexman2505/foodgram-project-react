@@ -4,7 +4,7 @@ from users.models import Subscription, User
 
 @register(User)
 class UserAdmin(ModelAdmin):
-    """Управление пользователями в admin."""
+    """Управление пользователями в админке."""
 
     fields = ('username', 'email', 'first_name', 'last_name', 'password')
     list_display = ('id', 'username', 'email', 'first_name', 'last_name')
@@ -21,7 +21,7 @@ class UserAdmin(ModelAdmin):
 
 @register(Subscription)
 class SubscriptionAdmin(ModelAdmin):
-    """Управление подписками в admin."""
+    """Управление подписками в админке."""
 
     list_display = ('id', 'user', 'author')
     search_fields = ('user', 'author')

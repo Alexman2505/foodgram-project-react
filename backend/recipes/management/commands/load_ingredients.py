@@ -5,7 +5,8 @@ from recipes.models import Ingredient
 
 
 class Command(BaseCommand):
-    """Импорт данных из csv в модель Ingredient."""
+    """Импорт данных из csv в модель Ingredient.
+    Но я реализовал и через админку через библиотеку import_export"""
 
     def import_ingredients(self, file='ingredients.csv'):
         with open(f'./data/{file}', newline='', encoding='utf-8') as f:
