@@ -3,14 +3,12 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# почему ошибка импорта, ведь в requirements.txt прописано!
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'defolt_secret_key')
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
-# DEBUG работает не смотря на ошибку импорта в VScode, странно!
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
 INSTALLED_APPS = [
@@ -78,16 +76,10 @@ else:
             'USER': os.getenv('POSTGRES_USER', 'django'),
             'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
             'HOST': os.getenv('DB_HOST', ''),
-            #'DB_PORT': os.getenv('DB_PORT', '5432'),
             'PORT': os.getenv('DB_PORT', '5432'),
         }
     }
 
-# CORS_URLS_REGEX = r'^/api/.*$'
-
-# CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:3000',
-# ]
 CORS_ORIGIN_WHITELIST = ['http://localhost:3000']
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -123,11 +115,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
-# STATIC_ROOT = BASE_DIR / 'collected_static' так было в уроке 10
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-# MEDIA_ROOT = '/media' # так было в уроке 10
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -137,8 +127,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        # 'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
