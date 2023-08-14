@@ -12,9 +12,9 @@ from .views import (
 
 router = DefaultRouter()
 router.register(r'users', CustomUserViewSet, basename='users')
-router.register(r'tags', TagViewSet)
-router.register(r'ingredients', IngredientViewSet)
-router.register(r'recipes', RecipeViewSet)
+router.register(r'tags', TagViewSet, basename='tags')
+router.register(r'ingredients', IngredientViewSet, basename='ingredients')
+router.register(r'recipes', RecipeViewSet, basename='recipes')
 
 urlpatterns = [
     path('users/me/', CurrentUserMeView.as_view()),
