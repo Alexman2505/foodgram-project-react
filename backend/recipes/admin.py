@@ -2,7 +2,7 @@ from django.contrib.admin import register, ModelAdmin, TabularInline
 from import_export.admin import ImportExportModelAdmin
 from import_export.resources import ModelResource
 
-from .models import (
+from recipes.models import (
     Favorite,
     Ingredient,
     Recipe,

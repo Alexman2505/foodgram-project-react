@@ -3,24 +3,26 @@ from collections import defaultdict
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import (
-    Favorite,
-    Ingredient,
-    Recipe,
-    RecipeIngredients,
-    ShoppingCart,
-    Tag,
+from rest_framework import status
+from rest_framework.mixins import (
+    CreateModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
 )
-from rest_framework import mixins, permissions, status, views, viewsets
+from rest_framework.views import APIView
+from rest_framework.viewsets import (
+    GenericViewSet,
+    ModelViewSet,
+    ReadOnlyModelViewSet,
+)
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
-from users.models import Subscription, User
 
-from .filters import IngredientFilter, RecipeFilter
-from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
-from .serializers import (
+from api.filters import IngredientFilter, RecipeFilter
+from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
+from api.serializers import (
     ChangePasswordSerializer,
     CustomUserCreateSerializer,
     CustomUserSerializer,
@@ -31,18 +33,27 @@ from .serializers import (
     SubscriptionSerializer,
     TagSerializer,
 )
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    Recipe,
+    RecipeIngredients,
+    ShoppingCart,
+    Tag,
+)
+from users.models import Subscription, User
 
 
 class CustomUserViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet,
+    CreateModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    GenericViewSet,
 ):
     """Кастомный Viewset модели пользователя."""
 
     queryset = User.objects.all()
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -54,7 +65,7 @@ class CustomUserViewSet(
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, permission_classes=[permissions.IsAuthenticated])
+    @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         queryset = User.objects.filter(following__user=request.user)
         page = self.paginate_queryset(queryset)
@@ -72,7 +83,7 @@ class CustomUserViewSet(
     @action(
         methods=['post', 'delete'],
         detail=True,
-        permission_classes=[permissions.IsAuthenticated],
+        permission_classes=[IsAuthenticated],
     )
     def subscribe(self, request, pk):
         author = get_object_or_404(User, id=pk)
@@ -109,10 +120,10 @@ class CustomUserViewSet(
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class CurrentUserMeView(views.APIView):
+class CurrentUserMeView(APIView):
     """View class просмотра текущего пользователя (себя)."""
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         serializer = CustomUserSerializer(
@@ -126,7 +137,7 @@ class CurrentUserMeView(views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ChangePasswordView(views.APIView):
+class ChangePasswordView(APIView):
     """View class изменения пароля."""
 
     permission_classes = [IsAuthenticated]
@@ -147,7 +158,7 @@ class ChangePasswordView(views.APIView):
         )
 
 
-class TagViewSet(viewsets.ReadOnlyModelViewSet):
+class TagViewSet(ReadOnlyModelViewSet):
     """Viewset модели тега."""
 
     queryset = Tag.objects.all()
@@ -156,7 +167,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
 
-class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+class IngredientViewSet(ReadOnlyModelViewSet):
     """Viewset модели ингредиента."""
 
     queryset = Ingredient.objects.all()
@@ -167,7 +178,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = IngredientFilter
 
 
-class RecipeViewSet(viewsets.ModelViewSet):
+class RecipeViewSet(ModelViewSet):
     """Viewset модели рецепта."""
 
     queryset = Recipe.objects.prefetch_related(
@@ -179,7 +190,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
-        if self.request.method in permissions.SAFE_METHODS:
+        if self.request.method in SAFE_METHODS:
             return RecipeSerializer
         return RecipeCreateSerializer
 
