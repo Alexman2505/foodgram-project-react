@@ -135,8 +135,8 @@ dmypy.json
 /.vscode/
 .vscode/
 
-**/migrations/*.py
-/recipes/migrations/*.py
-/users/migrations/*.py
-
 media/
+
+sent_emails/
+/sent_emails/
+**/sent_emails/*
