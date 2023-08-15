@@ -1,32 +1,38 @@
 from django.contrib.auth import get_user_model
-from django_filters import rest_framework as filters
+from django_filters.rest_framework import (
+    BooleanFilter,
+    CharFilter,
+    FilterSet,
+    ModelMultipleChoiceFilter,
+)
+
 from recipes.models import Ingredient, Recipe, Tag
 
 User = get_user_model()
 
 
-class IngredientFilter(filters.FilterSet):
+class IngredientFilter(FilterSet):
     """Фильтр для поиска по списку ингредиентов
     (поиск ведется по вхождению в начало названия)."""
 
-    name = filters.CharFilter(field_name='name', lookup_expr='istartswith')
+    name = CharFilter(field_name='name', lookup_expr='istartswith')
 
     class Meta:
         model = Ingredient
         fields = ['name']
 
 
-class RecipeFilter(filters.FilterSet):
+class RecipeFilter(FilterSet):
     """Фильтр для рецептов."""
 
-    tags = filters.ModelMultipleChoiceFilter(
+    tags = ModelMultipleChoiceFilter(
         field_name='tags__slug',
         to_field_name='slug',
         queryset=Tag.objects.all(),
     )
 
-    is_favorited = filters.BooleanFilter(method='filter_favorited')
-    is_in_shopping_cart = filters.BooleanFilter(method='filter_shopping_cart')
+    is_favorited = BooleanFilter(method='filter_favorited')
+    is_in_shopping_cart = BooleanFilter(method='filter_shopping_cart')
 
     class Meta:
         model = Recipe

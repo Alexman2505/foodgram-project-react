@@ -12,6 +12,7 @@ from django.db.models import (
     TextField,
     UniqueConstraint,
 )
+
 from users.models import User
 
 

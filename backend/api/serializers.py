@@ -3,7 +3,6 @@ import base64
 from django.contrib.auth.hashers import check_password
 from django.core.files.base import ContentFile
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from recipes.models import Ingredient, Recipe, RecipeIngredients, Tag
 from rest_framework.serializers import (
     CharField,
     ImageField,
@@ -15,6 +14,8 @@ from rest_framework.serializers import (
     SerializerMethodField,
     ValidationError,
 )
+
+from recipes.models import Ingredient, Recipe, RecipeIngredients, Tag
 from users.models import User
 
 

@@ -10,6 +10,7 @@ from .views import (
     TagViewSet,
 )
 
+
 router = DefaultRouter()
 router.register(r'users', CustomUserViewSet, basename='users')
 router.register(r'tags', TagViewSet, basename='tags')
