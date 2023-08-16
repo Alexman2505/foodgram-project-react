@@ -6,9 +6,7 @@ class IsAuthorOrReadOnly(BasePermission):
     для всех остальных доступно лишь чтение."""
 
     def has_object_permission(self, request, view, obj):
-        if request.method in SAFE_METHODS:
-            return True
-        return obj.author == request.user
+        return obj.author == request.user or request.method in SAFE_METHODS
 
 
 class IsAdminOrReadOnly(BasePermission):
