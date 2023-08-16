@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db.models import (
     CASCADE,
@@ -17,7 +18,7 @@ class User(AbstractUser):
 
     email = EmailField(
         verbose_name='Адрес электронной почты',
-        max_length=254,
+        max_length=settings.MAX_LENGTH_EMAIL,
         unique=True,
         blank=False,
         null=False,
@@ -29,9 +30,19 @@ class User(AbstractUser):
         null=False,
         blank=False,
     )
-    first_name = CharField(verbose_name='Имя', max_length=150, blank=False)
-    last_name = CharField(verbose_name='Фамилия', max_length=150, blank=False)
-    password = CharField(verbose_name='Пароль', max_length=150)
+    first_name = CharField(
+        verbose_name='Имя',
+        max_length=settings.MAX_LENGTH_USERNAME,
+        blank=False,
+    )
+    last_name = CharField(
+        verbose_name='Фамилия',
+        max_length=settings.MAX_LENGTH_USERNAME,
+        blank=False,
+    )
+    password = CharField(
+        verbose_name='Пароль', max_length=settings.MAX_LENGTH_USERNAME
+    )
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']

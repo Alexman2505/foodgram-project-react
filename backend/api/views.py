@@ -67,7 +67,8 @@ class CustomUserViewSet(
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
-        "Получаем список пользователей, на которого подписан текущий пользователь"
+        "Получаем список пользователей,"
+        "на которого подписан текущий пользователь"
         queryset = User.objects.filter(following__user=request.user)
         page = self.paginate_queryset(queryset)
         serializer = SubscriptionSerializer(

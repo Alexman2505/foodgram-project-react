@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db.models import (
     CASCADE,
@@ -19,10 +20,14 @@ from users.models import User
 class Tag(Model):
     """Модель тега."""
 
-    name = CharField(verbose_name='Название', max_length=200, unique=True)
+    name = CharField(
+        verbose_name='Название',
+        max_length=settings.MAX_LENGTH_NAME,
+        unique=True,
+    )
     color = CharField(
         verbose_name='Цвет в HEX',
-        max_length=7,
+        max_length=settings.MAX_LENGTH_HEX,
         unique=True,
         validators=[
             RegexValidator(
@@ -32,7 +37,9 @@ class Tag(Model):
         ],
     )
     slug = SlugField(
-        verbose_name='Уникальный слаг', max_length=200, unique=True
+        verbose_name='Уникальный слаг',
+        max_length=settings.MAX_LENGTH_NAME,
+        unique=True,
     )
 
     class Meta:
@@ -47,9 +54,11 @@ class Tag(Model):
 class Ingredient(Model):
     """Модель ингридиента."""
 
-    name = CharField(verbose_name='Название', max_length=200)
+    name = CharField(
+        verbose_name='Название', max_length=settings.MAX_LENGTH_NAME
+    )
     measurement_unit = CharField(
-        verbose_name='Единица измерения', max_length=200
+        verbose_name='Единица измерения', max_length=settings.MAX_LENGTH_NAME
     )
 
     class Meta:
@@ -80,7 +89,9 @@ class Recipe(Model):
     image = ImageField(
         verbose_name='Изображение рецепта', upload_to='recipes/'
     )
-    name = CharField(verbose_name='Название рецепта', max_length=200)
+    name = CharField(
+        verbose_name='Название рецепта', max_length=settings.MAX_LENGTH_NAME
+    )
     text = TextField(verbose_name='Описание рецепта')
     cooking_time = PositiveIntegerField(
         verbose_name='Время приготовления (в минутах)',
