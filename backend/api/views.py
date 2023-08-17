@@ -9,7 +9,6 @@ from rest_framework.mixins import (
     ListModelMixin,
     RetrieveModelMixin,
 )
-from rest_framework.views import APIView
 from rest_framework.viewsets import (
     GenericViewSet,
     ModelViewSet,
@@ -23,7 +22,6 @@ from rest_framework.response import Response
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from api.serializers import (
-    ChangePasswordSerializer,
     CustomUserCreateSerializer,
     CustomUserSerializer,
     IngredientSerializer,
@@ -122,44 +120,6 @@ class CustomUserViewSet(
             },
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class CurrentUserMeView(APIView):
-    """View class просмотра текущего пользователя (себя)."""
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        serializer = CustomUserSerializer(
-            request.user,
-            context={
-                'request': request,
-                'format': self.format_kwarg,
-                'view': self,
-            },
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class ChangePasswordView(APIView):
-    """View class изменения пароля."""
-
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        serializer = ChangePasswordSerializer(
-            data=request.data, context={'request': request}
-        )
-        serializer.is_valid(raise_exception=True)
-
-        user = request.user
-        new_password = serializer.validated_data['new_password']
-        user.set_password(new_password)
-        user.save()
-
-        return Response(
-            {'message': 'Пароль успешно изменен.'}, status=status.HTTP_200_OK
-        )
 
 
 class TagViewSet(ReadOnlyModelViewSet):
