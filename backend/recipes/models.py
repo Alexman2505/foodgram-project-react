@@ -65,6 +65,12 @@ class Ingredient(Model):
         ordering = ['name']
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
+        constraints = [
+            UniqueConstraint(
+                fields=['name', 'measurement_unit'],
+                name='unique_ingredient_measurement',
+            )
+        ]
 
     def __str__(self):
         return self.name
@@ -165,61 +171,43 @@ class RecipeIngredients(Model):
         return f'{self.ingredient} – {self.amount}'
 
 
-class Favorite(Model):
-    """Модель избранного рецепта."""
+class BaseInteractionModel(Model):
+    """Базовая абстрактная модель для избранного и корзины."""
 
     user = ForeignKey(
         User,
         verbose_name='Пользователь',
         on_delete=CASCADE,
-        related_name='favorites',
     )
     recipe = ForeignKey(
         Recipe,
         verbose_name='Рецепт',
         on_delete=CASCADE,
-        related_name='favorites',
     )
+
+    class Meta:
+        abstract = True
+        constraints = [
+            UniqueConstraint(
+                fields=['user', 'recipe'], name='unique_interaction'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.user} взаимодействовал с {self.recipe}'
+
+
+class Favorite(BaseInteractionModel):
+    """Модель избранного рецепта."""
 
     class Meta:
         verbose_name = 'Избранный рецепт'
         verbose_name_plural = 'Избранные рецепты'
-        constraints = [
-            UniqueConstraint(
-                fields=['user', 'recipe'],
-                name='уникальность_сочетания_избранного_пользователь_рецепт',
-            )
-        ]
-
-    def __str__(self):
-        return f'{self.user} добавил {self.recipe} в избранное.'
 
 
-class ShoppingCart(Model):
+class ShoppingCart(BaseInteractionModel):
     """Модель корзины."""
-
-    user = ForeignKey(
-        User,
-        verbose_name='Пользователь',
-        on_delete=CASCADE,
-        related_name='shopping_cart',
-    )
-    recipe = ForeignKey(
-        Recipe,
-        verbose_name='Рецепт',
-        on_delete=CASCADE,
-        related_name='shopping_cart',
-    )
 
     class Meta:
         verbose_name = 'Корзина покупок'
         verbose_name_plural = 'Корзины покупок'
-        constraints = [
-            UniqueConstraint(
-                fields=['user', 'recipe'],
-                name='уникальность_сочетания_корзины_пользователь_рецепт',
-            )
-        ]
-
-    def __str__(self):
-        return f'{self.user} добавил {self.recipe} в корзину покупок.'

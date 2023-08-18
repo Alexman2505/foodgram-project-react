@@ -1,16 +1,11 @@
 from collections import defaultdict
+from djoser.views import UserViewSet
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.mixins import (
-    CreateModelMixin,
-    ListModelMixin,
-    RetrieveModelMixin,
-)
 from rest_framework.viewsets import (
-    GenericViewSet,
     ModelViewSet,
     ReadOnlyModelViewSet,
 )
@@ -42,12 +37,7 @@ from recipes.models import (
 from users.models import Subscription, User
 
 
-class CustomUserViewSet(
-    CreateModelMixin,
-    ListModelMixin,
-    RetrieveModelMixin,
-    GenericViewSet,
-):
+class CustomUserViewSet(UserViewSet):
     """Кастомный Viewset модели пользователя."""
 
     queryset = User.objects.all()
@@ -86,20 +76,23 @@ class CustomUserViewSet(
         permission_classes=[IsAuthenticated],
     )
     def subscribe(self, request, pk):
-        "Этот метод позволяет текущему пользователю подписаться"
-        "или отписаться от другого пользователя."
+        """Этот метод позволяет текущему пользователю подписаться
+        или отписаться от другого пользователя.
+        """
         author = get_object_or_404(User, id=pk)
         subscription = Subscription.objects.filter(
             user=request.user, author=author
         )
-        if request.method == 'DELETE' and not subscription:
-            return Response(
-                {'errors': 'Подписка уже удалена.'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+
         if request.method == 'DELETE':
+            if not subscription:
+                return Response(
+                    {'errors': 'Подписка уже удалена.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+
         if subscription:
             return Response(
                 {'errors': 'Вы уже подписаны на этого автора.'},
@@ -214,28 +207,42 @@ class RecipeViewSet(ModelViewSet):
 
         return ingredient_list
 
+    def manage_recipe_user(self, request, pk, model, action):
+        """Общая функция для создания/удаления связки
+        рецепт<->пользователь по id рецепта.
+        """
+        recipe = get_object_or_404(Recipe, id=pk)
+        if action == 'create':
+            obj, created = model.objects.get_or_create(
+                recipe=recipe, user=request.user
+            )
+            if not created:
+                return (
+                    {"message": f"Уже есть рецепт с id = {pk}."},
+                    status.HTTP_400_BAD_REQUEST,
+                )
+        elif action == 'delete':
+            try:
+                favorite_recipe = model.objects.get(
+                    recipe=recipe, user=request.user
+                )
+                favorite_recipe.delete()
+            except model.DoesNotExist:
+                return (
+                    {"message": f"Рецепт с id = {pk} не найден."},
+                    status.HTTP_404_NOT_FOUND,
+                )
+        serializer = RecipeListSerializer(recipe, context={'request': request})
+        return (
+            (serializer.data, status.HTTP_201_CREATED)
+            if action == 'create'
+            else (None, status.HTTP_204_NO_CONTENT)
+        )
+
     def create_recipe_user(self, request, pk, model):
         """Доп.функция: создаем связку рецепт<->пользователь по id рецепта."""
-        recipe = get_object_or_404(Recipe, id=pk)
-        obj, created = model.objects.get_or_create(
-            recipe=recipe, user=request.user
-        )
-        if not created:
-            return (
-                {"message": f"Уже есть рецепт с id = {pk}."},
-                status.HTTP_400_BAD_REQUEST,
-            )
-        serializer = RecipeListSerializer(recipe, context={'request': request})
-        return (serializer.data, status.HTTP_201_CREATED)
+        return self.manage_recipe_user(request, pk, model, action='create')
 
     def delete_recipe_user(self, request, pk, model):
         """Доп.функция: удаляем связку рецепт<->пользователь по id рецепта."""
-        recipe = get_object_or_404(Recipe, id=pk)
-        favorite_recipe = get_object_or_404(
-            model, recipe=recipe, user=request.user
-        )
-        favorite_recipe.delete()
-        return (
-            {"message": f"Рецепт с id = {pk} удален."},
-            status.HTTP_204_NO_CONTENT,
-        )
+        return self.manage_recipe_user(request, pk, model, action='delete')

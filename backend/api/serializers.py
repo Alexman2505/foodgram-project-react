@@ -1,6 +1,6 @@
+import re
+
 from drf_extra_fields.fields import Base64ImageField
-
-
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework.serializers import (
     IntegerField,
@@ -28,6 +28,16 @@ class CustomUserCreateSerializer(UserCreateSerializer):
             'last_name',
             'password',
         )
+
+    def validate_username(self, value):
+        if value.lower() == 'me':
+            raise ValidationError('Имя пользователя "me" недопустимо.')
+        if not re.match(r'^[\w.@+-]+$', value):
+            raise ValidationError(
+                "Имя пользователя должно содержать только буквы, цифры "
+                "и следующие символы: @, ., +, -, _."
+            )
+        return value
 
 
 class CustomUserSerializer(UserSerializer):

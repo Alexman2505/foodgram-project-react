@@ -1,3 +1,4 @@
+import re
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
@@ -26,7 +27,7 @@ class User(AbstractUser):
     )
     username = CharField(
         verbose_name='Логин',
-        max_length=150,
+        max_length=settings.MAX_LENGTH_USERNAME,
         unique=True,
         null=False,
         blank=False,
@@ -57,6 +58,11 @@ class User(AbstractUser):
         super().clean()
         if self.username.lower() == 'me':
             raise ValidationError('Имя пользователя "me" недопустимо.')
+        if not re.match(r'^[\w.@+-]+$', self.username):
+            raise ValidationError(
+                "Имя пользователя должно содержать только буквы, цифры "
+                "и следующие символы: @, ., +, -, _."
+            )
 
     def __str__(self):
         return self.username
