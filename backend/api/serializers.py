@@ -131,14 +131,12 @@ class RecipeIngredientSerializer(ModelSerializer):
 class RecipeIngredientCreateSerializer(ModelSerializer):
     """Сериализатор состава ингридиентов в создаваемом рецепте."""
 
-    # Поле для передачи идентификатора ингредиента
-    ingredient = IntegerField()
-    # Поле для передачи количества ингредиентов
+    id = IntegerField()
     amount = IntegerField()
 
     class Meta:
         model = RecipeIngredients
-        fields = ('ingredient', 'amount')
+        fields = ('id', 'amount')
 
 
 class RecipeListSerializer(ModelSerializer):
