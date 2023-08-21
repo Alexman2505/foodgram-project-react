@@ -37,11 +37,18 @@ from recipes.models import (
 from users.models import Subscription, User
 
 
+class CustomPageNumberPagination(PageNumberPagination):
+    """Кастомный пагинатор"""
+
+    page_size_query_param = 'page_size'
+
+
 class CustomUserViewSet(UserViewSet):
     """Кастомный Viewset модели пользователя."""
 
     queryset = User.objects.all()
     permission_classes = [AllowAny]
+    pagination_class = CustomPageNumberPagination
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -50,17 +57,20 @@ class CustomUserViewSet(UserViewSet):
 
     def list(self, request):
         queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        paginator = CustomPageNumberPagination()
+        paginated_queryset = paginator.paginate_queryset(queryset, request)
+        serializer = self.get_serializer(paginated_queryset, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
-        "Получаем список пользователей,"
-        "на которого подписан текущий пользователь"
+        """Получаем список пользователей,
+        на которого подписан текущий пользователь"""
         queryset = User.objects.filter(following__user=request.user)
-        page = self.paginate_queryset(queryset)
+        paginator = CustomPageNumberPagination()
+        paginated_queryset = paginator.paginate_queryset(queryset, request)
         serializer = SubscriptionSerializer(
-            page,
+            paginated_queryset,
             many=True,
             context={
                 'request': request,
@@ -68,22 +78,21 @@ class CustomUserViewSet(UserViewSet):
                 'view': self,
             },
         )
-        return self.get_paginated_response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)
 
     @action(
         methods=['post', 'delete'],
         detail=True,
         permission_classes=[IsAuthenticated],
     )
-    def subscribe(self, request, pk):
+    def subscribe(self, request, id):
         """Этот метод позволяет текущему пользователю подписаться
         или отписаться от другого пользователя.
         """
-        author = get_object_or_404(User, id=pk)
+        author = get_object_or_404(User, id=id)
         subscription = Subscription.objects.filter(
             user=request.user, author=author
         )
-
         if request.method == 'DELETE':
             if not subscription:
                 return Response(
@@ -142,7 +151,7 @@ class RecipeViewSet(ModelViewSet):
         'author', 'tags', 'ingredients'
     ).all()
     permission_classes = [IsAuthorOrReadOnly]
-    pagination_class = PageNumberPagination
+    pagination_class = CustomPageNumberPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
@@ -151,22 +160,23 @@ class RecipeViewSet(ModelViewSet):
             return RecipeSerializer
         return RecipeCreateSerializer
 
+    def handle_action(self, request, pk, model_class):
+        if request.method == "POST":
+            data, status = self.create_recipe_user(request, pk, model_class)
+        else:
+            data, status = self.delete_recipe_user(request, pk, model_class)
+        return data, status
+
     @action(methods=['post', 'delete'], detail=True)
     def favorite(self, request, pk):
         """Действия с избранным: добавляем/удаляем рецепт."""
-        if request.method == "POST":
-            data, status = self.create_recipe_user(request, pk, Favorite)
-            return Response(data, status=status)
-        data, status = self.delete_recipe_user(request, pk, Favorite)
+        data, status = self.handle_action(request, pk, Favorite)
         return Response(data, status=status)
 
     @action(methods=['post', 'delete'], detail=True)
     def shopping_cart(self, request, pk):
         """Действия с корзиной: добавляем/удаляем рецепт."""
-        if request.method == "POST":
-            data, status = self.create_recipe_user(request, pk, ShoppingCart)
-            return Response(data, status=status)
-        data, status = self.delete_recipe_user(request, pk, ShoppingCart)
+        data, status = self.handle_action(request, pk, ShoppingCart)
         return Response(data, status=status)
 
     @action(
@@ -176,7 +186,7 @@ class RecipeViewSet(ModelViewSet):
         """Выгружаем список продуктов из корзины (формат txt)."""
         ingredients = (
             RecipeIngredients.objects.filter(
-                recipe__shopping_cart__user=request.user
+                recipe__shoppingcart__user=request.user
             )
             .values(
                 'ingredient__name', 'ingredient__measurement_unit', 'amount'

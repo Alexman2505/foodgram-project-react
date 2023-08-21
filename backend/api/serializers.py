@@ -3,7 +3,6 @@ import re
 from drf_extra_fields.fields import Base64ImageField
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework.serializers import (
-    IntegerField,
     ModelSerializer,
     PrimaryKeyRelatedField,
     SerializerMethodField,
@@ -131,8 +130,7 @@ class RecipeIngredientSerializer(ModelSerializer):
 class RecipeIngredientCreateSerializer(ModelSerializer):
     """Сериализатор состава ингридиентов в создаваемом рецепте."""
 
-    id = IntegerField()
-    amount = IntegerField()
+    id = PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
 
     class Meta:
         model = RecipeIngredients
@@ -160,6 +158,11 @@ class RecipeSerializer(ModelSerializer):
     is_favorited = SerializerMethodField()
     is_in_shopping_cart = SerializerMethodField()
     image = Base64ImageField(use_url=True)
+
+    def get_image(self, obj):
+        if obj.image:
+            return obj.image.url
+        return None
 
     class Meta:
         model = Recipe
@@ -196,14 +199,14 @@ class RecipeSerializer(ModelSerializer):
         return obj.is_in_shopping_cart(user)
 
 
-class RecipeCreateSerializer(RecipeSerializer):
+class RecipeCreateSerializer(ModelSerializer):
     """Сериализатор создания и изменения рецепта."""
 
-    author = CustomUserSerializer(read_only=True)
-    tags = PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
+    image = Base64ImageField()
     ingredients = RecipeIngredientCreateSerializer(
         source='recipeingredients', many=True
     )
+    tags = PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
 
     class Meta:
         model = Recipe
@@ -215,6 +218,10 @@ class RecipeCreateSerializer(RecipeSerializer):
             'text',
             'cooking_time',
         )
+
+    def to_representation(self, instance):
+        serializer = RecipeSerializer(instance, context=self.context)
+        return serializer.data
 
     def validate(self, data):
         """Проверяет валидность входных данных
@@ -274,9 +281,8 @@ class RecipeCreateSerializer(RecipeSerializer):
         recipe_ingredients = []
 
         for ing in ingredients:
-            ingredient_id = ing['id']
+            ingredient = ing['id']
             ingredient_amount = ing['amount']
-            ingredient = Ingredient.objects.get(id=ingredient_id)
             recipe_ingredient = RecipeIngredients(
                 recipe=recipe, ingredient=ingredient, amount=ingredient_amount
             )
