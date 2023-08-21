@@ -19,11 +19,9 @@ services:
     env_file:
       - ../.env
     volumes:
-      # - static:/staticfiles/
-      # - static:/app/static/
-      - static:/backend_static #тут статика из теории
+      - static:/backend_static
       - media:/media
-      # - media:/app/media/
+
     depends_on:
       - db
 
@@ -34,20 +32,18 @@ services:
     env_file:
       - ../.env
     volumes:
-      - ../frontend/:/app/result_build/
-      # - static:/staticfiles/ #тут статика из теории
+      - static:/app/result_build
 
   nginx:
     image: nginx:1.19.3
     env_file:
       - ../.env
     ports:
-      - "80:80"
+      - "8000:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
-      - static:/var/html/
-      - media:/var/html/media
+      - ../docs/:/static/api/docs
+      - static:/static
+      - media:/media
     depends_on:
       - backend
