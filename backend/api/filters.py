@@ -45,7 +45,7 @@ class RecipeFilter(FilterSet):
         user = self.request.user
         if value and not user.is_anonymous:
             field_name = (
-                'favorites' if name == 'is_favorited' else 'shopping_cart'
+                'favorite' if name == 'is_favorited' else 'shoppingcart'
             )
             filter_parameters = {f'{field_name}__user': user}
             return queryset.filter(**filter_parameters)

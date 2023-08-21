@@ -157,7 +157,7 @@ class RecipeSerializer(ModelSerializer):
     )
     is_favorited = SerializerMethodField()
     is_in_shopping_cart = SerializerMethodField()
-    image = Base64ImageField(use_url=True)
+    image = SerializerMethodField()
 
     def get_image(self, obj):
         if obj.image:

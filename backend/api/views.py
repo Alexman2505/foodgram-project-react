@@ -17,8 +17,6 @@ from rest_framework.response import Response
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from api.serializers import (
-    CustomUserCreateSerializer,
-    CustomUserSerializer,
     IngredientSerializer,
     RecipeCreateSerializer,
     RecipeListSerializer,
@@ -49,18 +47,6 @@ class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
     pagination_class = CustomPageNumberPagination
-
-    def get_serializer_class(self):
-        if self.action == 'create':
-            return CustomUserCreateSerializer
-        return CustomUserSerializer
-
-    def list(self, request):
-        queryset = self.get_queryset()
-        paginator = CustomPageNumberPagination()
-        paginated_queryset = paginator.paginate_queryset(queryset, request)
-        serializer = self.get_serializer(paginated_queryset, many=True)
-        return paginator.get_paginated_response(serializer.data)
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
