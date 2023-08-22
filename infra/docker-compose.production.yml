@@ -12,12 +12,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ../.env
+      - .env
 
   backend:
-    build: ../backend
+    image: alexman2505/foodgram_backend:latest
     env_file:
-      - ../.env
+      - .env
     volumes:
       - static:/backend_static
       - media:/media
@@ -25,18 +25,18 @@ services:
       - db
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: alexman2505/foodgram_frontend:latest
     env_file:
-      - ../.env
+      - .env
     volumes:
       - static:/app/result_build
+    depends_on:
+      - backend
 
   nginx:
     image: nginx:1.19.3
     env_file:
-      - ../.env
+      - .env
     ports:
       - "9050:80"
     volumes:
