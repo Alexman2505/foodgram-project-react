@@ -2,8 +2,9 @@ from import_export.admin import ImportExportModelAdmin
 from import_export.resources import ModelResource
 
 from django.contrib.admin import register, ModelAdmin, TabularInline
-from django.forms.models import BaseInlineFormSet
 from django.core.exceptions import ValidationError
+from django.forms.models import BaseInlineFormSet
+
 
 from recipes.models import (
     Favorite,
