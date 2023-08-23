@@ -27,7 +27,7 @@ class TagInline(TabularInline):
 class RecipeAdmin(ModelAdmin):
     """Управление рецептами в админке."""
 
-    inlines = [RecipeIngredientInline, TagInline]
+    inlines = [RecipeIngredientInline]
 
     list_display = ('id', 'name', 'author', 'text', 'cooking_time', 'pub_date')
     search_fields = ('name', 'author')
