@@ -23,12 +23,10 @@ class ReceptOne(BaseInlineFormSet):
     def clean(self):
         super().clean()
 
-        has_ingredients = any(
+        if not any(
             form.cleaned_data and not form.cleaned_data.get('DELETE')
             for form in self.forms
-        )
-
-        if not has_ingredients:
+        ):
             raise ValidationError(
                 "Рецепт должен содержать как минимум один ингредиент!"
             )
