@@ -43,10 +43,8 @@ class RecipeFilter(FilterSet):
 
     def filter_favorite_or_cart(self, queryset, name, value):
         user = self.request.user
-        if value and not user.is_anonymous:
-            field_name = (
-                'favorite' if name == 'is_favorited' else 'shoppingcart'
-            )
-            filter_parameters = {f'{field_name}__user': user}
-            return queryset.filter(**filter_parameters)
-        return queryset
+        if not value or user.is_anonymous:
+            return queryset
+        field_name = 'favorite' if name == 'is_favorited' else 'shoppingcart'
+        filter_parameters = {f'{field_name}__user': user}
+        return queryset.filter(**filter_parameters)

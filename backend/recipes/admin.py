@@ -1,6 +1,9 @@
-from django.contrib.admin import register, ModelAdmin, TabularInline
 from import_export.admin import ImportExportModelAdmin
 from import_export.resources import ModelResource
+
+from django.contrib.admin import register, ModelAdmin, TabularInline
+from django.forms.models import BaseInlineFormSet
+from django.core.exceptions import ValidationError
 
 from recipes.models import (
     Favorite,
@@ -12,10 +15,30 @@ from recipes.models import (
 )
 
 
+class ReceptOne(BaseInlineFormSet):
+    """Это проверка на невозможность сохранения в админке рецепта
+    без ингредиентов.
+    """
+
+    def clean(self):
+        super().clean()
+
+        has_ingredients = any(
+            form.cleaned_data and not form.cleaned_data.get('DELETE')
+            for form in self.forms
+        )
+
+        if not has_ingredients:
+            raise ValidationError(
+                "Рецепт должен содержать как минимум один ингредиент!"
+            )
+
+
 class RecipeIngredientInline(TabularInline):
     model = RecipeIngredients
     extra = 0
     min_num = 1
+    formset = ReceptOne
 
 
 class TagInline(TabularInline):
