@@ -14,8 +14,6 @@ class IsAdminOrReadOnly(BasePermission):
     для всех остальных доступно лишь чтение."""
 
     def has_permission(self, request, view):
-        return (
-            True
-            if request.method in SAFE_METHODS
-            else request.user and request.user.is_superuser
+        return request.method in SAFE_METHODS or (
+            request.user and request.user.is_superuser
         )

@@ -1,7 +1,5 @@
-import re
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ValidationError
 from django.db.models import (
     CASCADE,
     CharField,
@@ -13,6 +11,8 @@ from django.db.models import (
     Q,
     UniqueConstraint,
 )
+
+from api.validators import validate_username
 
 
 class User(AbstractUser):
@@ -31,6 +31,9 @@ class User(AbstractUser):
         unique=True,
         null=False,
         blank=False,
+        validators=[
+            validate_username,
+        ],
     )
     first_name = CharField(
         verbose_name='Имя',
@@ -53,16 +56,6 @@ class User(AbstractUser):
         ordering = ['id']
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-
-    def clean(self):
-        super().clean()
-        if self.username.lower() == 'me':
-            raise ValidationError('Имя пользователя "me" недопустимо.')
-        if not re.match(r'^[\w.@+-]+$', self.username):
-            raise ValidationError(
-                "Имя пользователя должно содержать только буквы, цифры "
-                "и следующие символы: @, ., +, -, _."
-            )
 
     def __str__(self):
         return self.username

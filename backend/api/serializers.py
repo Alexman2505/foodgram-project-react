@@ -1,5 +1,3 @@
-import re
-
 from drf_extra_fields.fields import Base64ImageField
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework.serializers import (
@@ -27,16 +25,6 @@ class CustomUserCreateSerializer(UserCreateSerializer):
             'last_name',
             'password',
         )
-
-    def validate_username(self, value):
-        if value.lower() == 'me':
-            raise ValidationError('Имя пользователя "me" недопустимо.')
-        if not re.match(r'^[\w.@+-]+$', value):
-            raise ValidationError(
-                "Имя пользователя должно содержать только буквы, цифры "
-                "и следующие символы: @, ., +, -, _."
-            )
-        return value
 
 
 class CustomUserSerializer(UserSerializer):
@@ -179,24 +167,26 @@ class RecipeSerializer(ModelSerializer):
             'cooking_time',
         )
 
-    def user_authentication_required(func):
-        def wrapper(self, obj):
-            request = self.context.get('request')
-            if not request or request.user.is_anonymous:
-                return False
-            return func(self, obj, request.user)
+    def check_user_action(self, obj, action_func):
+        """Проверяет, выполнил ли пользователь
+        определенное действие для объекта.
+        """
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
+        return action_func(obj, request.user)
 
-        return wrapper
+    def get_is_favorited(self, obj):
+        """Определяет, является ли рецепт избранным для пользователя."""
+        return self.check_user_action(
+            obj, lambda obj, user: obj.is_favorited(user)
+        )
 
-    @user_authentication_required
-    def get_is_favorited(self, obj, user):
-        """Определяем, является ли рецепт избранным для пользователя."""
-        return obj.is_favorited(user)
-
-    @user_authentication_required
-    def get_is_in_shopping_cart(self, obj, user):
-        """Определяем, находится ли рецепт в корзине пользователя."""
-        return obj.is_in_shopping_cart(user)
+    def get_is_in_shopping_cart(self, obj):
+        """Определяет, находится ли рецепт в корзине пользователя."""
+        return self.check_user_action(
+            obj, lambda obj, user: obj.is_in_shopping_cart(user)
+        )
 
 
 class RecipeCreateSerializer(ModelSerializer):

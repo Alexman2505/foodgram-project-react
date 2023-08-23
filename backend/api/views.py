@@ -1,6 +1,6 @@
 from collections import defaultdict
-from djoser.views import UserViewSet
 
+from djoser.views import UserViewSet
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
